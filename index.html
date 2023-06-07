@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Walk Tracker</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <style>
+    body {
+      background-color: #f5f5f7;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 40px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-top: 30px;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 30px;
+      text-align: center;
+      color: #333;
+      margin-bottom: 40px;
+    }
+
+    label {
+      font-size: 14px;
+      color: #666;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    button[type="submit"] {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border-radius: 5px;
+      border: none;
+      background-color: #333;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #result {
+      margin-top: 40px;
+      font-size: 16px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>1000 Mile Walk Calculator</h1>
+    <form id="walkForm">
+        <div id="alertContainer" class="mt-3"></div>
+      <div class="mb-3">
+        <label for="name" class="form-label">Name:</label>
+        <input type="text" class="form-control" id="name" required>
+      </div>
+      <div class="mb-3">
+        <label for="miles" class="form-label">Total Miles Walked:</label>
+        <input type="number" step="0.01" class="form-control" id="miles" min="0" required>
+      </div>
+      <div class="mb-3">
+        <label for="startDate" class="form-label">Start Date:</label>
+        <input type="date" class="form-control" id="startDate" required>
+      </div>
+      <div class="mb-3">
+        <label for="milesPerDay" class="form-label">Miles Per Day:</label>
+        <input type="number" step="0.01" class="form-control" id="milesPerDay" min="0" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Calculate</button>
+    </form>
+    <div id="result" class="mt-3"></div>
+  </div>
+
+  <!-- Bootstrap JS and your custom JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.5.0/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Function to store form data in web storage
+    function storeData() {
+      var name = document.getElementById('name').value;
+      var miles = document.getElementById('miles').value;
+      var startDate = document.getElementById('startDate').value;
+      var milesPerDay = document.getElementById('milesPerDay').value;
+
+      var formData = {
+        name: name,
+        miles: miles,
+        startDate: startDate,
+        milesPerDay: milesPerDay
+      };
+
+      localStorage.setItem('walkData', JSON.stringify(formData));
+    }
+
+    // Function to load stored data
+    function loadStoredData() {
+      var storedData = localStorage.getItem('walkData');
+
+      if (storedData) {
+        var formData = JSON.parse(storedData);
+
+        document.getElementById('name').value = formData.name;
+        document.getElementById('miles').value = formData.miles;
+        document.getElementById('startDate').value = formData.startDate;
+        document.getElementById('milesPerDay').value = formData.milesPerDay;
+      }
+    }
+
+    // Load stored data when the page loads
+    loadStoredData();
+
+    document.getElementById('walkForm').addEventListener('submit', function (event) {
+      event.preventDefault(); // Prevent form submission
+
+      // Retrieve user input
+      var name = document.getElementById('name').value;
+      var miles = parseFloat(document.getElementById('miles').value);
+      var startDate = new Date(document.getElementById('startDate').value);
+      var milesPerDay = parseFloat(document.getElementById('milesPerDay').value);
+
+      // Calculate estimated finish date
+      var daysRemaining = Math.ceil((1000 - miles) / milesPerDay);
+      var estimatedFinishDate = new Date(startDate.getTime() + (daysRemaining * 24 * 60 * 60 * 1000));
+      var formattedFinishDate = estimatedFinishDate.toDateString();
+
+      // Display the result
+      var result = document.getElementById('result');
+      var alertContainer = document.getElementById('alertContainer');
+
+      if (daysRemaining > 365) {
+        // Display a warning alert if estimated finish date is more than a year from start date
+        alertContainer.innerHTML = '<div class="alert alert-warning" role="alert">Warning: Your estimated finish date is more than a year from your start date. You might not be able to complete the challenge in the given time.</div>';
+      } else {
+        alertContainer.innerHTML = ''; // Clear any previous alert
+      }
+
+      result.innerHTML = 'Dear ' + name + ', based on your current progress, you are estimated to finish your 1000-mile walk on ' + formattedFinishDate + '.';
+
+      // Store the form data in web storage
+      storeData();
+    });
+  </script>
+</body>
+
+</html>
