@@ -68,32 +68,61 @@
 
 <body>
   <div class="container">
-    <h1>1000 Mile Walk Calculator</h1>
-    <form id="walkForm">
-        <div id="alertContainer" class="mt-3"></div>
-      <div class="mb-3">
-        <label for="name" class="form-label">Name:</label>
-        <input type="text" class="form-control" id="name" required>
+    <h1>Walk Tracker</h1>
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="date-tab" data-bs-toggle="tab" data-bs-target="#date" type="button" role="tab" aria-controls="date" aria-selected="true">Date Calculator</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false">Settings</button>
+      </li>
+    </ul>
+    <div class="tab-content" id="myTabContent">
+      <div class="tab-pane fade show active" id="date" role="tabpanel" aria-labelledby="date-tab">
+        <form id="walkForm">
+          <div id="alertContainer" class="mt-3"></div>
+          <div class="mb-3">
+            <label for="name" class="form-label">Name:</label>
+            <input type="text" class="form-control" id="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="miles" class="form-label">Total Miles Walked:</label>
+            <input type="number" step="0.01" class="form-control" id="miles" min="0" required>
+          </div>
+          <div class="mb-3">
+            <label for="startDate" class="form-label">Start Date:</label>
+            <input type="date" class="form-control" id="startDate" required>
+          </div>
+          <div class="mb-3">
+            <label for="milesPerDay" class="form-label">Miles Per Day:</label>
+            <input type="number" step="0.01" class="form-control" id="milesPerDay" min="0" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Calculate</button>
+        </form>
+        <div id="result" class="mt-3"></div>
       </div>
-      <div class="mb-3">
-        <label for="miles" class="form-label">Total Miles Walked:</label>
-        <input type="number" step="0.01" class="form-control" id="miles" min="0" required>
+      <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+        <form id="settingsForm">
+          <div class="mt-3 mb-3">
+            <label for="challengeMiles" class="form-label">Challenge Miles:</label>
+            <input type="number" class="form-control" id="challengeMiles" min="0" required>
+          </div>
+          <div class="mb-3">
+            <label for="challengeDuration" class="form-label">Challenge Duration (years):</label>
+            <select class="form-select" id="challengeDuration" required>
+              <option value="1">1 year</option>
+              <option value="2">2 years</option>
+              <option value="3">3 years</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Settings</button>
+        </form>
       </div>
-      <div class="mb-3">
-        <label for="startDate" class="form-label">Start Date:</label>
-        <input type="date" class="form-control" id="startDate" required>
-      </div>
-      <div class="mb-3">
-        <label for="milesPerDay" class="form-label">Miles Per Day:</label>
-        <input type="number" step="0.01" class="form-control" id="milesPerDay" min="0" required>
-      </div>
-      <button type="submit" class="btn btn-primary">Calculate</button>
-    </form>
-    <div id="result" class="mt-3"></div>
+    </div>
   </div>
 
   <!-- Bootstrap JS and your custom JavaScript -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.5.0/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
   <script>
     // Function to store form data in web storage
     function storeData() {
@@ -129,6 +158,50 @@
     // Load stored data when the page loads
     loadStoredData();
 
+    // Function to store challenge miles in web storage
+    function storeChallengeMiles(challengeMiles) {
+      localStorage.setItem('challengeMiles', challengeMiles.toString());
+    }
+
+    // Function to load stored challenge miles
+    function loadChallengeMiles() {
+      var challengeMiles = localStorage.getItem('challengeMiles');
+      if (challengeMiles) {
+        document.getElementById('challengeMiles').value = challengeMiles;
+      }
+    }
+
+    // Function to store challenge duration in web storage
+    function storeChallengeDuration(challengeDuration) {
+      localStorage.setItem('challengeDuration', challengeDuration.toString());
+    }
+
+    // Function to load stored challenge duration
+    function loadChallengeDuration() {
+      var challengeDuration = localStorage.getItem('challengeDuration');
+      if (challengeDuration) {
+        document.getElementById('challengeDuration').value = challengeDuration;
+      }
+    }
+
+    // Load stored challenge miles and duration
+    loadChallengeMiles();
+    loadChallengeDuration();
+
+    // Save settings form submission
+    document.getElementById('settingsForm').addEventListener('submit', function (event) {
+      event.preventDefault(); // Prevent form submission
+
+      var challengeMiles = document.getElementById('challengeMiles').value;
+      var challengeDuration = document.getElementById('challengeDuration').value;
+
+      // Store challenge miles and duration
+      storeChallengeMiles(challengeMiles);
+      storeChallengeDuration(challengeDuration);
+
+      alert('Settings saved successfully!');
+    });
+
     document.getElementById('walkForm').addEventListener('submit', function (event) {
       event.preventDefault(); // Prevent form submission
 
@@ -138,23 +211,30 @@
       var startDate = new Date(document.getElementById('startDate').value);
       var milesPerDay = parseFloat(document.getElementById('milesPerDay').value);
 
+      // Retrieve challenge miles and duration from storage
+      var challengeMiles = parseFloat(localStorage.getItem('challengeMiles')) || 1000;
+      var challengeDuration = parseInt(localStorage.getItem('challengeDuration')) || 1;
+
       // Calculate estimated finish date
-      var daysRemaining = Math.ceil((1000 - miles) / milesPerDay);
+      var daysRemaining = Math.ceil((challengeMiles - miles) / milesPerDay);
       var estimatedFinishDate = new Date(startDate.getTime() + (daysRemaining * 24 * 60 * 60 * 1000));
       var formattedFinishDate = estimatedFinishDate.toDateString();
+
+      // Calculate maximum allowed finish date
+      var maxFinishDate = new Date(startDate.getTime() + (challengeDuration * 365 * 24 * 60 * 60 * 1000));
 
       // Display the result
       var result = document.getElementById('result');
       var alertContainer = document.getElementById('alertContainer');
 
-      if (daysRemaining > 365) {
-        // Display a warning alert if estimated finish date is more than a year from start date
-        alertContainer.innerHTML = '<div class="alert alert-warning" role="alert">Warning: Your estimated finish date is more than a year from your start date. You might not be able to complete the challenge in the given time.</div>';
+      if (daysRemaining > (challengeDuration * 365)) {
+        // Display a warning alert if estimated finish date exceeds the challenge duration
+        alertContainer.innerHTML = '<div class="alert alert-warning" role="alert">Warning: Your estimated finish date is more than ' + challengeDuration + ' year(s) from your start date. You might not be able to complete the challenge in the given time.</div>';
       } else {
         alertContainer.innerHTML = ''; // Clear any previous alert
       }
 
-      result.innerHTML = 'Hi ' + name + ', based on your current progress, you are estimated to finish your 1000-mile walk on ' + formattedFinishDate + '.';
+      result.innerHTML = 'Hi ' + name + ', based on your current progress, you are estimated to finish your ' + challengeMiles + '-mile walk on ' + formattedFinishDate + '.';
 
       // Store the form data in web storage
       storeData();
